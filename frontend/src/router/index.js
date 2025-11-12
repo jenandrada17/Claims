@@ -5,9 +5,9 @@ import Login from '../views/Login.vue'
 const router = createRouter({
   history: createWebHistory(),
   routes: [
-    { path: '/', component: Home },
     { path: '/login', component: Login },
+    { path: '/', component: Home, meta: { requiresAuth: true } }, // 👈 needs auth
   ],
-})
+}) 
 
 export default router

@@ -1,10 +1,10 @@
 <template>
   <section class="p-6">
-    <h1 class="text-xl font-bold mb-4">API Ping Test</h1>
-    <button @click="ping" class="px-3 py-2 rounded bg-gray-200">Ping API</button>
+    <h1 class="text-xl font-bold mb-4">Home</h1>
+    <button @click="ping" class="px-3 py-2 rounded bg-gray-200">Button</button>
     <pre class="mt-4 bg-gray-50 p-3 rounded border" v-if="result">{{ result }}</pre>
     <p class="mt-4 text-red-600" v-if="error">{{ error }}</p>
-    <p class="mt-6"><router-link to="/login">Go to Login</router-link></p>
+    <p class="mt-6"><router-link to="/login">Logout</router-link></p>
   </section>
 </template>
 
