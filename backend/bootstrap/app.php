@@ -21,6 +21,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'login',
             'logout',
+            'forgot-password',
+            'reset-password',
         ]);
 
         // ✅ Add/ensure Sanctum stateful for API group:

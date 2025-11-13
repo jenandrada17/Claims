@@ -125,9 +125,24 @@ async function handleLogin () {
   }
 } 
 
-function forgotPassword () {
-  // later: route to your reset page or call API to send mail
-  alert('Password reset instructions will be sent to your email.')
+async function forgotPassword() {
+  if (!email.value) {
+    showToast("Please enter your email first.", "error")
+    return
+  }
+
+  try {
+    await backend.get('/sanctum/csrf-cookie')
+
+    await backend.post('/forgot-password', {
+      email: email.value
+    })
+
+    showToast("Password reset link has been sent to your email.", "success")
+  } catch (e) {
+    console.log(e)
+    showToast("Unable to send reset email.", "error")
+  }
 } 
 </script>
 
