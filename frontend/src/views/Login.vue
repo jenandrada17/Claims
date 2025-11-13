@@ -4,7 +4,7 @@
       <!-- 🔹 Logo Placeholder -->
       <!-- <div class="text-center mb-4">
         <div class="logo-placeholder mx-auto"></div>
-      </div> -->
+      </div> --> 
 
       <!-- 🔹 Login Form -->
       <form @submit.prevent="handleLogin">
@@ -13,10 +13,31 @@
           <input v-model.trim="email" type="email" class="form-control" required />
         </div>
 
-        <div class="mb-3">
-          <label class="form-label">Password</label>
-          <input v-model="password" type="password" class="form-control" required />
-        </div>
+      <div class="mb-3 position-relative">
+        <label class="form-label">Password</label>
+
+        <input
+          :type="showPassword ? 'text' : 'password'"
+          v-model="password"
+          class="form-control pe-5"
+          required
+        />
+
+        <!-- Eye Icon -->
+        <i
+          class="bi"
+          :class="showPassword ? 'bi-eye-slash' : 'bi-eye'"
+          @click="showPassword = !showPassword"
+          style="
+            position: absolute;
+            right: 12px;
+            top: 38px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            color: #6b7280;
+          "
+        ></i>
+      </div>
 
         <!-- Remember me + Forgot password -->
         <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
@@ -42,11 +63,10 @@
       </form>
     </div>
   </div>
-</template>
-
+</template> 
 
 <script setup>
-import { ref } from 'vue'
+import { ref, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import { backend, api } from '../lib/api'   // we created these earlier
 
@@ -56,51 +76,66 @@ const password = ref('')
 const rememberMe = ref(false)
 const loading = ref(false)
 const error = ref('')
+const showPassword = ref(false)
+const showToast = inject("showToast")
 
 async function handleLogin () {
   error.value = ''
+
+  // 1) Simple front-end validation
   if (!email.value || !password.value) {
     error.value = 'Please enter email and password.'
     return
   }
+
   loading.value = true
   try {
+    console.log('Login clicked, starting CSRF flow')
+ 
     await backend.get('/sanctum/csrf-cookie')
-    await api.post('/login', {
+ 
+    await backend.post('/login', {
       email: email.value,
-      password: password.value,
-      remember: rememberMe.value
+      password: password.value,   
+      remember: rememberMe.value,
     })
-    await api.get('/me')   // optional sanity check
-    router.push('/')       // go to home/dashboard
-  } catch (e) {
-    error.value = e?.response?.data?.message || 'Login failed. Check your credentials.'
+ 
+    // await api.get('/me') 
+    showToast("Successfully Login!", "success") 
+    router.push('/')
+
+  } catch (e) { 
+    const status = e?.response?.status
+    let msg = ''
+
+    if (status === 419) {
+      msg = 'Session/CSRF error. Please refresh the page and try again.'
+    } else if (status === 429) {
+      msg = e?.response?.data?.message || 'Too many attempts. Please try again later.'
+    } else if (status === 422) {
+      msg = 'Invalid email or password.'
+    } else {
+      msg = e?.response?.data?.message || 'Login failed. Check your credentials.'
+    }
+
+    error.value = msg
+    showToast(msg, "error")
   } finally {
     loading.value = false
   }
-}
+} 
 
 function forgotPassword () {
   // later: route to your reset page or call API to send mail
   alert('Password reset instructions will be sent to your email.')
-}
+} 
 </script>
 
 
-<style scoped> 
+<style scoped>  
 *, *::before, *::after { 
   box-sizing: border-box; 
-} 
-/* .login-box {
-  width: 100%;
-  max-width: 420px;
-  margin-inline: auto;
-  padding: clamp(16px, 4vw, 24px);
-  border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 6px 24px rgba(0,0,0,.08);
-} */
-
+}  
 
 .login-box {
   width: clamp(320px, 90vw, 420px);
@@ -168,4 +203,5 @@ a.text-primary:hover {
 .text-muted {
   color: #9ca3af !important;
 } 
+
 </style>
