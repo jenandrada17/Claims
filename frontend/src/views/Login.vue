@@ -47,9 +47,26 @@
               Remember Me
             </label>
           </div>
-          <a href="#" class="small text-primary text-decoration-none ms-auto ms-sm-0" @click.prevent="forgotPassword">
+          <!-- <a href="#" class="small text-primary text-decoration-none ms-auto ms-sm-0" @click.prevent="forgotPassword">
             Forgot Password?
-          </a>
+          </a> --> 
+
+          <a 
+            href="#" 
+            class="small text-primary text-decoration-none ms-auto ms-sm-0"
+            style="cursor:pointer;"
+            @click.prevent="forgotPassword"
+          >
+            <template v-if="!forgotLoading">
+              Forgot Password?
+            </template>
+
+            <template v-else>
+              <span class="spinner-border spinner-border-sm"></span>
+              <span class="ms-1">Sending...</span>
+            </template>
+          </a> 
+
         </div> 
 
         <button type="submit" class="btn btn-primary w-100" :disabled="loading">
@@ -78,6 +95,7 @@ const loading = ref(false)
 const error = ref('')
 const showPassword = ref(false)
 const showToast = inject("showToast")
+const forgotLoading = ref(false)
 
 async function handleLogin () {
   error.value = ''
@@ -101,6 +119,7 @@ async function handleLogin () {
     })
  
     // await api.get('/me') 
+    console.log("Toast Injected:", showToast)
     showToast("Successfully Login!", "success") 
     router.push('/')
 
@@ -131,16 +150,19 @@ async function forgotPassword() {
     return
   }
 
+  forgotLoading.value = true
+
   try {
-    await backend.get('/sanctum/csrf-cookie')
+    await backend.get('/sanctum/csrf-cookie') 
 
     await backend.post('/forgot-password', {
       email: email.value
-    })
+    }) 
 
     showToast("Password reset link has been sent to your email.", "success")
+    forgotLoading.value = false
   } catch (e) {
-    console.log(e)
+    forgotLoading.value = false 
     showToast("Unable to send reset email.", "error")
   }
 } 
@@ -158,8 +180,8 @@ async function forgotPassword() {
   margin-inline: auto;
   padding: clamp(16px, 4vw, 24px);
   border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 6px 24px rgba(0,0,0,.08);
+  background: #fff; 
+  box-shadow: 0 0 20px rgba(0,0,0,0.3) !important;
 }
 
 @media (min-width: 992px) {

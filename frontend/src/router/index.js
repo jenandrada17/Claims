@@ -10,7 +10,8 @@ const router = createRouter({
     // ⭐ NEW — Reset Password
     { 
       path: '/reset-password', 
-      name: 'reset-password',
+      // name: 'reset-password',
+      name: 'ResetPassword',
       component: () => import('../views/ResetPassword.vue')
     },
 

@@ -27,9 +27,13 @@ Route::post('/login', function (Request $r) {
 })->middleware('throttle:login'); // keep your login rate limit
 
 Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])
-    ->middleware('guest')
     ->name('password.email');
 
+Route::get('/reset-password/{token}', function ($token) {
+    $email = request('email');
+    return redirect("http://localhost:5173/reset-password?token=$token&email=$email");
+})->name('password.reset');
+
 Route::post('/reset-password', [NewPasswordController::class, 'store'])
-    ->middleware('guest')
     ->name('password.update');
+
