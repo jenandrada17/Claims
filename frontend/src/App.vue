@@ -1,11 +1,16 @@
 <template>
   <Toast :toast="toast" />
+
+  <!-- <div class="page-label mt-3">
+    {{ pageLabel }}
+  </div> -->
+
   <RouterView />
 </template>
 
 <script setup>
 import { provide, ref } from "vue"
-import Toast from "./components/Toast.vue"
+import Toast from "./components/Toast.vue" 
 
 const toast = ref({
   show: false,
@@ -23,6 +28,12 @@ function showToast(message, type = "success") {
   }, 2500)
 }
 
+const pageLabel = ref("Patients"); 
+function setPageLabel(label) {
+  pageLabel.value = label;
+}
+
+provide("setPageLabel", setPageLabel); 
 provide("showToast", showToast)
 </script>
   

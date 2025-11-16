@@ -34,7 +34,6 @@ const toastIcon = computed(() => {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: white;
   border-radius: 10px;
   font-weight: 500;
   min-width: 250px;
@@ -43,18 +42,21 @@ const toastIcon = computed(() => {
   z-index: 9999;
   border-left: 5px solid;
   word-break: break-word;
+  color: white; /* default text color for visibility */
 }
 
 /* Success / Error Colors */
 .toast-container.success {
   border-color: #10b981;
-  color: #0f5132;
+  background-color: #d1fae5;
+  color: #065f46;
 }
 
 .toast-container.error {
   border-color: #ef4444;
+  background-color: #fee2e2;
   color: #7f1d1d;
-}
+} 
 
 /* Animation */
 .toast-fade-enter-from,
