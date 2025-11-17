@@ -1,4 +1,3 @@
-<!-- src/App.vue -->
 <template>
   <div class="main-container container-fluid"> 
     <!-- Header -->
@@ -51,7 +50,8 @@
     </div>
 
     <!-- Dynamic Content -->
-    <div class="content-container mt-3 bg-white p-4 shadow-sm rounded overflow-auto"> 
+    <!-- <div class="content-container mt-3 bg-white p-4 shadow-sm rounded overflow-auto">  -->
+    <div class="content-container mt-3 overflow-auto"> 
       <component :is="currentComponent"></component>
     </div>
 
@@ -131,8 +131,7 @@ const currentComponent = computed(() => {
   padding: 0.2rem;
 }
 
-/* Header */
-/* Header Layout */
+/* Header */ 
 .app-header {
   border: none; 
   border-radius: 8px;
@@ -167,13 +166,14 @@ const currentComponent = computed(() => {
 }
 
 .nav-item {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 500;
   color: #6b7280;
   cursor: pointer;
   padding-bottom: 6px;
   border-bottom: 2px solid transparent;
-  transition: .2s;
+  transition: .2s; 
+  margin-right: 22px; /* add space between items */
 }
 
 .nav-item.active {
@@ -193,6 +193,12 @@ const currentComponent = computed(() => {
   color: #dc2626;
   cursor: pointer;
 }
+
+.content-container {
+  background: transparent;     /* no white background */
+  padding: 0 !important;       /* remove internal padding */
+}
+
 
 /* MUCH BETTER HAMBURGER BUTTON */
 :deep(.hamburger-btn) {
@@ -216,29 +222,42 @@ const currentComponent = computed(() => {
 }
 .hamburger-btn:hover span {
   background: #1f2937;
-}
+} 
 
-/* Mobile Menu */
 .mobile-menu {
   position: absolute;
-  right: 10px;
-  top: 65px;
-  width: 180px;
+  top: 100%;       /* Attach BELOW the header */
+  left: 0;         /* Full width */
+  width: 100%;
   background: white;
-  border: 1px solid #cfe7ff;
-  border-radius: 6px;
-  padding: 0.6rem;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.10);
+
+  border-top: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+
   display: flex;
   flex-direction: column;
-  z-index: 100;
-}
+  padding: 1rem;
+
+  animation: dropdown 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+} 
+
+@keyframes dropdown {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+} 
 
 .mobile-nav-item {
-  padding: 10px 12px;
-  font-size: 15px;
-  color: #475569;
-  border-bottom: 1px solid #e5e7eb;
+  padding: 12px 10px;
+  font-size: 16px;
+  color: #1f2937;
+  border-bottom: 1px solid #f1f5f9;
   cursor: pointer;
 }
 
@@ -247,9 +266,10 @@ const currentComponent = computed(() => {
 }
 
 .mobile-nav-item.active {
-  color: #1d4ed8;
+  color: #2563eb;
   font-weight: 600;
 }
+
 
 .page-label {
   border: none;

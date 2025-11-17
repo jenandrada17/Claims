@@ -2,17 +2,20 @@
 
   <!-- SEARCH SECTION -->
   <div class="search-section">
-    <input
-      v-model="searchQuery"
-      type="text"
-      placeholder="Search patient..."
-      class="search-input"
-    />
-    <button @click="handleSearch" class="search-btn">Search</button>
-  </div>
+    <div class="search-inner">
+      <input
+        v-model="searchQuery"
+        type="text"
+        placeholder="Search patient..."
+        class="search-input"
+        @keyup.enter="handleSearch"
+      />
+      <button @click="handleSearch" class="search-btn">Search</button>
+    </div>
+  </div> 
 
   <!-- PATIENT PROFILE WRAPPER -->
-  <div v-if="patient" class="patient-wrapper">
+  <div v-if="patient" class="profile-panel">
 
     <!-- TABS -->
     <div class="tabs">
@@ -47,29 +50,65 @@
           </div>
         </div>
 
-        <!-- CLAIM HISTORY -->
-        <div v-if="activeTab === 'Claim History'" class="info-list">
-          <div
-            v-for="(claim, i) in patient.claimHistory"
-            :key="i"
-            class="row"
-          >
-            <span>Claim #{{ i + 1 }}</span>
-            <strong>{{ claim }}</strong>
-          </div>
-        </div>
-
         <!-- UTILIZATION -->
         <div v-if="activeTab === 'Utilization'" class="info-list">
+          <!-- Column headers -->
+          <div class="row" style="grid-template-columns: repeat(5, 1fr); background:#e5e7eb;">
+            <span><strong>Diagnosis</strong></span>
+            <span><strong>Benefit Amount</strong></span>
+            <span><strong>Total Deduction</strong></span>
+            <span><strong>Remaining Balance</strong></span>
+            <span><strong></strong></span>
+          </div> 
+           
+          <!-- Data rows with Show History button -->
           <div
-            v-for="(utilization, i) in patient.utilization"
+            v-for="(item, i) in patient.utilization"
             :key="i"
             class="row"
+            style="grid-template-columns: repeat(5, 1fr); align-items:center;"
           >
-            <span>Claim #1</span>
-            <strong>{{ utilization }}</strong>
+            <span>{{ item.diagnosis }}</span>
+            <span>{{ item.benefitAmount }}</span>
+            <span>{{ item.totalDeduction }}</span>
+            <span>{{ item.remainingBalance }}</span>
+ 
+            <span class="history-link" @click="showHistory(item.diagnosis)">
+              Show History
+            </span> 
           </div>
+
         </div>
+
+        <!-- CLAIM HISTORY -->  
+        <div v-if="activeTab === 'Claim History'" class="info-list">
+          <!-- Column headers -->
+          <div class="row" style="grid-template-columns: repeat(4, 1fr); background:#e5e7eb;">
+            <span><strong>Diagnosis</strong></span>
+            <span><strong>Claim Date</strong></span>
+            <span><strong>Claim Amount</strong></span> 
+          </div>
+
+          <!-- Data rows -->
+          <div
+            v-for="(item, i) in patient.claimHistory"
+            :key="i"
+            class="row"
+            style="grid-template-columns: repeat(4, 1fr);"
+          >
+            <span>{{ item.diagnosis }}</span>
+            <span>{{ item.claimDate }}</span>
+            <span>{{ item.claimAmount }}</span> 
+          </div> 
+
+          <!-- Total Row -->
+          <div class="row" style="grid-template-columns: repeat(4, 1fr); background:#e0e7ff;">
+            <span><strong>Total</strong></span>
+            <span></span>
+            <span><strong>{{ totalClaimAmount.toLocaleString() }}</strong></span>
+          </div>
+
+        </div>  
 
       </section>
     </div>
@@ -84,7 +123,7 @@ export default {
     return {
       searchQuery: "",
       activeTab: "Personal Info",
-      tabs: ["Personal Info", "Claim History", "Utilization"],
+      tabs: ["Personal Info", "Utilization", "Claim History"],
       patient: null,
     };
   },
@@ -96,12 +135,79 @@ export default {
         rfid: "02112304559",
         name: "John Doe",
         address: "Purok Sample, Barangay Sample GSC",
-        claimHistory: ["Claim #001 - Denge - 12,000","Claim #002 - Pneumonia - 15,000"],
-        utilization: ["November 7, 2025 - Dengue - 4,000", "November 20, 2025 - Dengue - 8,000"],
+        utilization: [
+          {
+            diagnosis: "Pneumonia",
+            benefitAmount: "50,000",
+            totalDeduction: "8,000",
+            remainingBalance: "42,000"
+          },
+          {
+            diagnosis: "Dengue",
+            benefitAmount: "50,000",
+            totalDeduction: "12,000",
+            remainingBalance: "38,000"
+          }
+        ], 
+        claimHistory: []
       };
-    },
+    },  
+
+    showHistory(diagnosis) {
+      this.activeTab = "Claim History";
+
+      this.patient.claimHistory = []; 
+
+      // Make sure claimHistory exists
+      if (!this.patient.claimHistory) {
+        this.patient.claimHistory = [];
+      }
+
+      if (diagnosis === "Pneumonia") {
+        this.patient.claimHistory.push(
+          {
+            diagnosis: "Pneumonia",
+            claimDate: "November 7, 2025",
+            claimAmount: "4,000",
+          },
+          {
+            diagnosis: "Pneumonia",
+            claimDate: "November 20, 2025",
+            claimAmount: "4,000",
+          }
+        );
+      }
+
+      else if (diagnosis === "Dengue") {
+        this.patient.claimHistory.push(
+          {
+            diagnosis: "Dengue",
+            claimDate: "December 1, 2025",
+            claimAmount: "8,000",
+          },
+          {
+            diagnosis: "Dengue",
+            claimDate: "December 15, 2025",
+            claimAmount: "4,000",
+          }
+        );
+      }
+    } 
   },
-};
+
+  computed: {
+    totalClaimAmount() {
+      if (!this.patient || !this.patient.claimHistory) return 0;
+
+      return this.patient.claimHistory.reduce((sum, c) => {
+        // remove commas before converting to number
+        const amount = Number(c.claimAmount.replace(/,/g, ""));
+        return sum + amount;
+      }, 0);
+    }
+  }
+
+}; 
 </script>
 
 <style scoped> 
@@ -112,29 +218,46 @@ export default {
   max-width: 1150px;
   margin: auto;
   padding: 20px;
-}
+} 
 
-/* SEARCH SECTION */
+/* .patient-page-wrapper,
+:host {
+  width: 100%;
+  max-width: 100%;    
+  margin: 0;         
+  padding: 20px;
+} */
+
 .search-section {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+} 
+
+.search-inner {
+  width: 100%;
+  max-width: 600px;
   display: flex;
   gap: 10px;
-  margin-bottom: 20px;
 }
+
+.profile-panel {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+} 
 
 .search-input {
   flex: 1;
-  background-color: white !important;
-  color: #374151 !important;         /* gray text */
   padding: 10px 12px;
-  border: 1px solid #d1d5db !important;
+  border: 1px solid #d1d5db;
   border-radius: 6px;
+  background: white;
+  color: #374151;
   font-size: 15px;
-  outline: none;
-  transition: 0.2s;
-}
-
-.search-input::placeholder {
-  color: #9ca3af; /* light gray placeholder */
+  width: 100%; 
 }
 
 .search-btn {
@@ -143,101 +266,41 @@ export default {
   color: white;
   border-radius: 6px;
   border: none;
+  font-weight: 600;
+  cursor: pointer;
 }
 
-/* PROFILE CONTAINER */
-.patient-wrapper {
-  width: 100%;
-  max-width: 100%;
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-
-  padding: 0;          /* ← REMOVE ALL INTERNAL PADDING */
-  margin: 0;           /* ← REMOVE OUTER MARGINS */
-}
-
-
-/* TABS */
 .tabs {
   display: flex;
   gap: 25px;
   border-bottom: 2px solid #e5e7eb;
   padding: 14px 20px;
-}
+  width: 100%;
+  margin-bottom: 30px;
+}  
 
 .tab-item {
+  flex: 1;
+  text-align: center;
+  padding: 12px 0;
   background: none;
   border: none;
-  padding: 8px 0;
-  color: #6b7280;
   cursor: pointer;
+  color: #6b7280;
+  font-weight: 500;
+  border-bottom: 3px solid transparent;
+  transition: 0.2s;
 }
-
+ 
 .tab-item.active {
-  border-bottom: 3px solid #2563eb;
   color: #2563eb;
-  font-weight: 600;
+  border-bottom-color: #2563eb;
 }
 
-/* GRID LAYOUT */
 .profile-grid {
-  width: 100%;           /* make it use the full container width */
   display: grid;
-  grid-template-columns: 260px 1fr;
-  gap: 20px;
-  padding: 20px;
-  box-sizing: border-box; /* ensures padding doesn't shrink width */
-} 
-
-/* LEFT SIDE */
-.profile-left {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.patient-photo {
+  grid-template-columns: 1fr;
   width: 100%;
-  border-radius: 8px;
-}
-
-.info-box {
-  background: #f8fafc;
-  padding: 12px;
-  border-radius: 8px;
-}
-
-.badge {
-  display: inline-block;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 12px;
-}
-
-.badge.high { background: #fee2e2; color: #b91c1c; }
-.badge.yellow { background: #fef3c7; color: #92400e; }
-
-.btn {
-  padding: 10px;
-  border-radius: 8px;
-  border: none;
-  width: 100%;
-  cursor: pointer;
-}
-
-.action-green { background: #16a34a; color: white; }
-.action-yellow { background: #fbbf24; }
-
-/* RIGHT SIDE */
-.section-title {
-  font-size: 20px;
-  font-weight: 600;
-}
-
-.section-sub {
-  color: #6b7280;
-  margin-bottom: 10px;
 }
 
 /* INFO LIST */
@@ -248,38 +311,55 @@ export default {
 
 .row {
   display: grid;
-  grid-template-columns: 200px 1fr;
-  padding: 12px 16px;
+  grid-template-columns: 220px 1fr;
+  padding: 18px 22px;
+  background: #fdfdfd;
   border-bottom: 1px solid #e5e7eb;
+  width: 100%;
+  font-size: 15px;
+  text-align: left;
+}  
+
+.row span {
+  color: #6b7280;
+  font-weight: 500;
 }
 
-.row:last-child {
-  border-bottom: none;
+.row strong {
+  font-weight: 600;
+  color: #111827;
 }
- 
-@media (max-width: 900px) {
-  .profile-grid {
-    grid-template-columns: 1fr;
-  }
+
+.info-list .row:nth-child(odd) {
+  background: #f3f4f6;
 }
+
+.history-link {
+  color: #2563eb;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.history-link:hover {
+  color: #1e4fd1;
+} 
 
 @media (max-width: 600px) {
+  .row {
+    grid-template-columns: 1fr;
+  }
   .tabs {
     gap: 10px;
     flex-wrap: wrap;
   }
-
-  .row {
-    grid-template-columns: 1fr;
-  }
-}
-@media (max-width: 600px) {
-  .search-section {
+  .search-inner {
     flex-direction: column;
   }
-
   .search-btn {
     width: 100%;
   }
-} 
+}
 </style>
